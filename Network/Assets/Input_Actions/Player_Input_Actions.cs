@@ -175,7 +175,7 @@ public partial class @Player_Input_Actions: IInputActionCollection2, IDisposable
         }
     ]
 }");
-        // Player
+        // NetPlayer
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Move_Forward = m_Player.FindAction("Move_Forward", throwIfNotFound: true);
         m_Player_Rotate = m_Player.FindAction("Rotate", throwIfNotFound: true);
@@ -239,7 +239,7 @@ public partial class @Player_Input_Actions: IInputActionCollection2, IDisposable
         return asset.FindBinding(bindingMask, out action);
     }
 
-    // Player
+    // NetPlayer
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Move_Forward;

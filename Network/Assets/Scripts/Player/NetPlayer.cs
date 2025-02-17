@@ -1,17 +1,17 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Unity.Netcode;
+using UnityEngine.InputSystem;
 
-public class Player : MonoBehaviour
+public class NetPlayer : NetworkBehaviour
 {
     [Tooltip("이동 속도")]
     public float moveSpeed = 3.5f;
     [Tooltip("회전 속도")]
     public float rotateSpeed = 90.0f;
-    [Tooltip("마지막 입력으로 인한 이동 방향(전진, 정지, 후진")]
-    private float moveDir = 0.0f;
+    [Tooltip("마지막 입력으로 인한 이동 방향(전진, 정지, 후진) 네트워크에서 공유되는 변수")]
+    private NetworkVariable<float> netMoveDir = new NetworkVariable<float>(0.0f);
     [Tooltip("마지막 입력으로 인한 회전 방향(좌회전, 정지, 우회전")]
-    private float rotate = 0.0f;
+    private NetworkVariable<float> rotate = new NetworkVariable<float>(0.0f);
 
     // 컴포넌트
     private CharacterController controller;
@@ -30,20 +30,20 @@ public class Player : MonoBehaviour
     [Tooltip("현재 애니메이션 상태")]
     private AnimationState state = AnimationState.None;
 
-    [Tooltip("애니메이션 상태 설정 및 확인용 프로퍼티")]
-    private AnimationState State
-    {
-        get => state;
-        set
-        {
-            if (value != state)
-            {
-                state = value;
+    //[Tooltip("애니메이션 상태 설정 및 확인용 프로퍼티")]
+    //private AnimationState State
+    //{
+    //    get => state;
+    //    set
+    //    {
+    //        if (value != state)
+    //        {
+    //            state = value;
 
-                animator.SetTrigger(state.ToString());
-            }
-        }
-    }
+    //            animator.SetTrigger(state.ToString());
+    //        }
+    //    }
+    //}
 
     private void Awake()
     {
@@ -54,8 +54,12 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        controller.SimpleMove(moveDir * transform.forward);
-        transform.Rotate(0, rotate * Time.deltaTime, 0, Space.World);
+        if (netMoveDir.Value != 0.0f)
+        {
+            controller.SimpleMove(netMoveDir.Value * transform.forward);
+        }
+
+        // transform.Rotate(0, rotate * Time.deltaTime, 0, Space.World);
     }
 
     private void OnEnable()
@@ -82,26 +86,47 @@ public class Player : MonoBehaviour
     {
         // 키보드라 -1, 0, 1 중 하나
         float moveInput = context.ReadValue<float>();
-        moveDir = moveInput * moveSpeed;
 
-        if (moveDir > 0.001f)
+        SetMoveInput(moveInput);
+
+        //if (moveDir > 0.001f)
+        //{
+        //    State = AnimationState.Walk;
+        //}
+        //else if (moveDir < -0.00f)
+        //{
+        //    State = AnimationState.BackWalk;
+        //}
+        //else
+        //{
+        //    State = AnimationState.Idel;
+        //}
+    }
+
+    private void SetMoveInput(float moveInput)
+    {
+        float moveDir = moveInput * moveSpeed;
+
+        if (NetworkManager.Singleton.IsServer)
         {
-            State = AnimationState.Walk;
+            netMoveDir.Value = moveDir;
         }
-        else if (moveDir < -0.00f)
+        else if (IsOwner)
         {
-            State = AnimationState.BackWalk;
+            MoveRequestServerRpc(moveDir);
         }
-        else
-        {
-            State = AnimationState.Idel;
-        }
+    }
+
+    [ServerRpc]
+    private void MoveRequestServerRpc(float move)
+    {
+        netMoveDir.Value = move;
     }
 
     private void OnRotate(InputAction.CallbackContext context)
     {
         // 키보드라 -1, 0, 1 중 하나
         float rotateInput = context.ReadValue<float>();
-        rotate = rotateInput * rotateSpeed;
+        // rotate = rotateInput * rotateSpeed;
     }
 }
