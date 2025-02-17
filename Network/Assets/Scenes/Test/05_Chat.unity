@@ -355,8 +355,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db6ed144d55573040bdf2fea7925f786, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  warningColor: {r: 0, g: 0, b: 0, a: 0}
-  errorColor: {r: 0, g: 0, b: 0, a: 0}
+  warningColor: {r: 1, g: 1, b: 0, a: 0}
+  errorColor: {r: 1, g: 0, b: 0, a: 0}
 --- !u!114 &20618185
 MonoBehaviour:
   m_ObjectHideFlags: 0

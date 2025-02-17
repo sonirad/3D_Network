@@ -148,6 +148,15 @@ public class NetPlayer : NetworkBehaviour
         animator.SetTrigger(newValue.ToString());
     }
 
+    /// <summary>
+    /// 채팅을 보내는 함수
+    /// </summary>
+    /// <param name="message"></param>
+    public void SendChat(string message)
+    {
+
+    }
+
     // 서버 Rpc들 --------------------------------------------------------------------------------------------------------------
     [ServerRpc]
     private void MoveRequestServerRpc(float move)
