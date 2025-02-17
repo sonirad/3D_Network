@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.InputSystem;
+using Unity.Collections;
 
 public class NetPlayer : NetworkBehaviour
 {
@@ -21,7 +22,7 @@ public class NetPlayer : NetworkBehaviour
     [Tooltip("애니메이션 상태")]
     private enum AnimationState
     {
-        Idel,     // 대기
+        Idle,     // 대기
         Walk,     // 걷기
         BackWalk,     // 뒤로 걷기
         None     // 초기값
@@ -31,6 +32,8 @@ public class NetPlayer : NetworkBehaviour
     private AnimationState state = AnimationState.None;
     [Tooltip("애니메이션 상태 처리용 네트워크 변수")]
     private NetworkVariable<AnimationState> netAnimState = new NetworkVariable<AnimationState>();
+    [Tooltip("채팅용 네트워크 변수")]
+    private NetworkVariable<FixedString512Bytes> chatString = new NetworkVariable<FixedString512Bytes>();
 
     // 유니티 이벤트 함수들
     private void Awake()
@@ -38,7 +41,9 @@ public class NetPlayer : NetworkBehaviour
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         inputActions = new Player_Input_Actions();
+
         netAnimState.OnValueChanged += OnAnimStateChange;
+        chatString.OnValueChanged += OnChatRecieve;
     }
 
     private void Update()
@@ -113,7 +118,7 @@ public class NetPlayer : NetworkBehaviour
         }
         else
         {
-            state = AnimationState.Idel;
+            state = AnimationState.Idle;
         }
 
         if (state != netAnimState.Value)
@@ -153,6 +158,16 @@ public class NetPlayer : NetworkBehaviour
     /// </summary>
     /// <param name="message"></param>
     public void SendChat(string message)
+    {
+
+    }
+
+    /// <summary>
+    /// 채팅을 받았을 때 처리
+    /// </summary>
+    /// <param name="previousValue"></param>
+    /// <param name="newValue"></param>
+    private void OnChatRecieve(FixedString512Bytes previousValue, FixedString512Bytes newValue)
     {
 
     }

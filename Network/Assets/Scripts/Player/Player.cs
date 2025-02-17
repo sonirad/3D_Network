@@ -21,7 +21,7 @@ public class Player : MonoBehaviour
     [Tooltip("애니메이션 상태")]
     private enum AnimationState
     {
-        Idel,     // 대기
+        Idle,     // 대기
         Walk,     // 걷기
         BackWalk,     // 뒤로 걷기
         None     // 초기값
@@ -94,7 +94,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            State = AnimationState.Idel;
+            State = AnimationState.Idle;
         }
     }
 
