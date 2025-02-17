@@ -1,4 +1,3 @@
-using System.Net.NetworkInformation;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,7 +5,7 @@ public class TestBase : MonoBehaviour
 {
     public int seed = -1;
     const int allRandom = -1;
-    private Test_Input_Actions inputActions;
+    protected Test_Input_Actions inputActions;
 
     private void Awake()
     {
@@ -19,7 +18,7 @@ public class TestBase : MonoBehaviour
         }
     }
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         inputActions.Test.Enable();
 
@@ -32,7 +31,7 @@ public class TestBase : MonoBehaviour
         inputActions.Test.Test1.performed += OnTestLClick;
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         inputActions.Test.Test1.performed -= OnTest1;
         inputActions.Test.Test1.performed -= OnTest2;

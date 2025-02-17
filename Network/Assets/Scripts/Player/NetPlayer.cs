@@ -11,7 +11,7 @@ public class NetPlayer : NetworkBehaviour
     [Tooltip("마지막 입력으로 인한 이동 방향(전진, 정지, 후진) 네트워크에서 공유되는 변수")]
     private NetworkVariable<float> netMoveDir = new NetworkVariable<float>(0.0f);
     [Tooltip("마지막 입력으로 인한 회전 방향(좌회전, 정지, 우회전")]
-    private NetworkVariable<float> rotate = new NetworkVariable<float>(0.0f);
+    private NetworkVariable<float> netRotate = new NetworkVariable<float>(0.0f);
 
     // 컴포넌트
     private CharacterController controller;
@@ -29,27 +29,16 @@ public class NetPlayer : NetworkBehaviour
 
     [Tooltip("현재 애니메이션 상태")]
     private AnimationState state = AnimationState.None;
+    [Tooltip("애니메이션 상태 처리용 네트워크 변수")]
+    private NetworkVariable<AnimationState> netAnimState = new NetworkVariable<AnimationState>();
 
-    //[Tooltip("애니메이션 상태 설정 및 확인용 프로퍼티")]
-    //private AnimationState State
-    //{
-    //    get => state;
-    //    set
-    //    {
-    //        if (value != state)
-    //        {
-    //            state = value;
-
-    //            animator.SetTrigger(state.ToString());
-    //        }
-    //    }
-    //}
-
+    // 유니티 이벤트 함수들
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
         inputActions = new Player_Input_Actions();
+        netAnimState.OnValueChanged += OnAnimStateChange;
     }
 
     private void Update()
@@ -59,7 +48,7 @@ public class NetPlayer : NetworkBehaviour
             controller.SimpleMove(netMoveDir.Value * transform.forward);
         }
 
-        // transform.Rotate(0, rotate * Time.deltaTime, 0, Space.World);
+        transform.Rotate(0, netRotate.Value * Time.deltaTime, 0, Space.World);
     }
 
     private void OnEnable()
@@ -82,27 +71,24 @@ public class NetPlayer : NetworkBehaviour
         inputActions.Player.Disable();
     }
 
+    // 입력 처리용 함수들
     private void OnMoveInput(InputAction.CallbackContext context)
     {
         // 키보드라 -1, 0, 1 중 하나
         float moveInput = context.ReadValue<float>();
 
         SetMoveInput(moveInput);
-
-        //if (moveDir > 0.001f)
-        //{
-        //    State = AnimationState.Walk;
-        //}
-        //else if (moveDir < -0.00f)
-        //{
-        //    State = AnimationState.BackWalk;
-        //}
-        //else
-        //{
-        //    State = AnimationState.Idel;
-        //}
     }
 
+    private void OnRotate(InputAction.CallbackContext context)
+    {
+        // 키보드라 -1, 0, 1 중 하나
+        float rotateInput = context.ReadValue<float>();
+
+        SetRotateInput(rotateInput);
+    }
+
+    // 기타 ----------------------------------------------------------------------------------------------------------
     private void SetMoveInput(float moveInput)
     {
         float moveDir = moveInput * moveSpeed;
@@ -115,18 +101,69 @@ public class NetPlayer : NetworkBehaviour
         {
             MoveRequestServerRpc(moveDir);
         }
+
+        // 애니메이션 변경
+        if (moveDir > 0.001f)
+        {
+            state = AnimationState.Walk;
+        }
+        else if (moveDir < -0.001f)
+        {
+            state = AnimationState.BackWalk;
+        }
+        else
+        {
+            state = AnimationState.Idel;
+        }
+
+        if (state != netAnimState.Value)
+        {
+            if (IsServer)
+            {
+                netAnimState.Value = state;
+            }
+            else if (IsOwner)
+            {
+                UpdateAnimStateServerRpc(state);
+            }
+        }
     }
 
+    private void SetRotateInput(float rotateInput)
+    {
+        float rotate = rotateInput * rotateSpeed;
+        
+        if (NetworkManager.Singleton.IsServer)
+        {
+            netRotate.Value = rotate;
+        }
+        else if (IsOwner)
+        {
+            RotateRequestServerRpc(rotate);
+        }
+    }
+
+    private void OnAnimStateChange(AnimationState previousValue, AnimationState newValue)
+    {
+        animator.SetTrigger(newValue.ToString());
+    }
+
+    // 서버 Rpc들 --------------------------------------------------------------------------------------------------------------
     [ServerRpc]
     private void MoveRequestServerRpc(float move)
     {
         netMoveDir.Value = move;
     }
 
-    private void OnRotate(InputAction.CallbackContext context)
+    [ServerRpc]
+    private void RotateRequestServerRpc(float rotate)
     {
-        // 키보드라 -1, 0, 1 중 하나
-        float rotateInput = context.ReadValue<float>();
-        // rotate = rotateInput * rotateSpeed;
+        netRotate.Value = rotate;
+    }
+
+    [ServerRpc]
+    private void UpdateAnimStateServerRpc(AnimationState state)
+    {
+        netAnimState.Value = state;
     }
 }

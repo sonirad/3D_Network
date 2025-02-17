@@ -1,5 +1,5 @@
 {
-    "name": "TestInputActions",
+    "name": "Test_Input_Actions",
     "maps": [
         {
             "name": "Test",
@@ -63,6 +63,15 @@
                     "name": "RClick",
                     "type": "Button",
                     "id": "0a8a23de-62f6-4bed-afea-df74c1d5a181",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Enter",
+                    "type": "Button",
+                    "id": "e036ca57-f358-43a2-8cfc-f284e89930c2",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -144,6 +153,17 @@
                     "processors": "",
                     "groups": "KM",
                     "action": "RClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b04bea60-7484-4708-9cfb-880479e50b67",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Enter",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
