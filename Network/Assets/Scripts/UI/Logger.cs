@@ -29,8 +29,14 @@ public class Logger : MonoBehaviour
 
         inputField.onSubmit.AddListener((text) =>
         {
-            Log(text);
-
+            if (GameManager.Instance.Player != null)
+            {
+                GameManager.Instance.Player.SendChat(text);
+            }
+            else
+            {
+                Log(text);
+            }
             // 입력 완료되면 비우기
             inputField.text = string.Empty;
             // 포커스 다시 활성화

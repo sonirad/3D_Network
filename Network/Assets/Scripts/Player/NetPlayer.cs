@@ -35,7 +35,7 @@ public class NetPlayer : NetworkBehaviour
     [Tooltip("채팅용 네트워크 변수")]
     private NetworkVariable<FixedString512Bytes> chatString = new NetworkVariable<FixedString512Bytes>();
 
-    // 유니티 이벤트 함수들
+    #region 유니티 이벤트 함수
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -75,8 +75,9 @@ public class NetPlayer : NetworkBehaviour
 
         inputActions.Player.Disable();
     }
+    #endregion
 
-    // 입력 처리용 함수들
+    #region 입력 처리용 함수들
     private void OnMoveInput(InputAction.CallbackContext context)
     {
         // 키보드라 -1, 0, 1 중 하나
@@ -92,59 +93,66 @@ public class NetPlayer : NetworkBehaviour
 
         SetRotateInput(rotateInput);
     }
+    #endregion
 
-    // 기타 ----------------------------------------------------------------------------------------------------------
+    #region 기타
     private void SetMoveInput(float moveInput)
     {
-        float moveDir = moveInput * moveSpeed;
+        if (IsOwner)
+        {
+            float moveDir = moveInput * moveSpeed;
 
-        if (NetworkManager.Singleton.IsServer)
-        {
-            netMoveDir.Value = moveDir;
-        }
-        else if (IsOwner)
-        {
-            MoveRequestServerRpc(moveDir);
-        }
-
-        // 애니메이션 변경
-        if (moveDir > 0.001f)
-        {
-            state = AnimationState.Walk;
-        }
-        else if (moveDir < -0.001f)
-        {
-            state = AnimationState.BackWalk;
-        }
-        else
-        {
-            state = AnimationState.Idle;
-        }
-
-        if (state != netAnimState.Value)
-        {
             if (IsServer)
             {
-                netAnimState.Value = state;
+                netMoveDir.Value = moveDir;
             }
-            else if (IsOwner)
+            else
             {
-                UpdateAnimStateServerRpc(state);
+                MoveRequestServerRpc(moveDir);
+            }
+
+            // 애니메이션 변경
+            if (moveDir > 0.001f)
+            {
+                state = AnimationState.Walk;
+            }
+            else if (moveDir < -0.001f)
+            {
+                state = AnimationState.BackWalk;
+            }
+            else
+            {
+                state = AnimationState.Idle;
+            }
+
+            if (state != netAnimState.Value)
+            {
+                if (IsServer)
+                {
+                    netAnimState.Value = state;
+                }
+                else if (IsOwner)
+                {
+                    UpdateAnimStateServerRpc(state);
+                }
             }
         }
     }
 
     private void SetRotateInput(float rotateInput)
     {
-        float rotate = rotateInput * rotateSpeed;
-        
-        if (NetworkManager.Singleton.IsServer)
+        if (IsOwner)
         {
-            netRotate.Value = rotate;
-        }
-        else if (IsOwner)
-        {
-            RotateRequestServerRpc(rotate);
+            float rotate = rotateInput * rotateSpeed;
+
+            if (IsServer)
+            {
+                netRotate.Value = rotate;
+            }
+            else
+            {
+                RotateRequestServerRpc(rotate);
+            }
         }
     }
 
@@ -152,14 +160,23 @@ public class NetPlayer : NetworkBehaviour
     {
         animator.SetTrigger(newValue.ToString());
     }
+    #endregion
 
+    #region 채팅
     /// <summary>
     /// 채팅을 보내는 함수
     /// </summary>
     /// <param name="message"></param>
     public void SendChat(string message)
     {
-
+        if (IsServer)
+        {
+            chatString.Value = message;
+        }
+        else
+        {
+            RequestChatServerRpc(message);
+        }
     }
 
     /// <summary>
@@ -169,10 +186,11 @@ public class NetPlayer : NetworkBehaviour
     /// <param name="newValue"></param>
     private void OnChatRecieve(FixedString512Bytes previousValue, FixedString512Bytes newValue)
     {
-
+        GameManager.Instance.Log(newValue.ToString());
     }
+    #endregion
 
-    // 서버 Rpc들 --------------------------------------------------------------------------------------------------------------
+    #region 서버 Rpc들
     [ServerRpc]
     private void MoveRequestServerRpc(float move)
     {
@@ -190,4 +208,11 @@ public class NetPlayer : NetworkBehaviour
     {
         netAnimState.Value = state;
     }
+
+    [ServerRpc]
+    private void RequestChatServerRpc(FixedString512Bytes message)
+    {
+        chatString.Value = message;
+    }
+    #endregion
 }
