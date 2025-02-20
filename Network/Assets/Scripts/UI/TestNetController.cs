@@ -53,5 +53,9 @@ public class TestNetController : MonoBehaviour
         child = transform.GetChild(3);
         child = child.GetChild(1);
         playerInGame = child.GetComponent<TextMeshProUGUI>();
+        GameManager gameManager = GameManager.Instance;
+
+        // 동시 접속자 숫자 변경 델리게이트가 실행되면 UI 갱신
+        gameManager.onPlayersInGameChange += (count) => playerInGame.text = count.ToString();
     }
 }
