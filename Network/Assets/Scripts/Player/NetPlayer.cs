@@ -96,18 +96,27 @@ public class NetPlayer : NetworkBehaviour
     #endregion
 
     #region 기타
+
+    /// <summary>
+    /// 이동 입력 처리용
+    /// </summary>
+    /// <param name="moveInput">이동 입력된 정도</param>
     private void SetMoveInput(float moveInput)
     {
+        // 오너 일 때만 이동 처리
         if (IsOwner)
         {
+            // 이동 정도 결정
             float moveDir = moveInput * moveSpeed;
 
             if (IsServer)
             {
+                // 서버면 직접 수정
                 netMoveDir.Value = moveDir;
             }
             else
             {
+                // 서버가 아니면 서버에게 수정 요청하는 Rpc 실행
                 MoveRequestServerRpc(moveDir);
             }
 
@@ -125,6 +134,7 @@ public class NetPlayer : NetworkBehaviour
                 state = AnimationState.Idle;
             }
 
+            // 애니메이션 상태가 변경되면
             if (state != netAnimState.Value)
             {
                 if (IsServer)
@@ -139,36 +149,52 @@ public class NetPlayer : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// 회전 입력을 처리
+    /// </summary>
+    /// <param name="rotateInput">회전 입력 정도</param>
     private void SetRotateInput(float rotateInput)
     {
+        // 오너 일 때만 처리
         if (IsOwner)
         {
+            // 회전량 결정
             float rotate = rotateInput * rotateSpeed;
 
             if (IsServer)
             {
+                // 서버면 직접 주성
                 netRotate.Value = rotate;
             }
             else
             {
+                // 서버가 아니면 Rpc 요청
                 RotateRequestServerRpc(rotate);
             }
         }
     }
 
+    /// <summary>
+    /// 애니메이션 상태가 변경되면 실행되는 함수
+    /// </summary>
+    /// <param name="previousValue">이전 값</param>
+    /// <param name="newValue">새 값</param>
     private void OnAnimStateChange(AnimationState previousValue, AnimationState newValue)
     {
+        // 새 값으로 변경
         animator.SetTrigger(newValue.ToString());
     }
     #endregion
 
     #region 채팅
+
     /// <summary>
     /// 채팅을 보내는 함수
     /// </summary>
     /// <param name="message"></param>
     public void SendChat(string message)
     {
+        // chatString 변경
         if (IsServer)
         {
             chatString.Value = message;
@@ -180,12 +206,13 @@ public class NetPlayer : NetworkBehaviour
     }
 
     /// <summary>
-    /// 채팅을 받았을 때 처리
+    /// 채팅을 받았을 때 처리(chatString 이 변경되었다 = 채팅을 받았다.)
     /// </summary>
     /// <param name="previousValue"></param>
     /// <param name="newValue"></param>
     private void OnChatRecieve(FixedString512Bytes previousValue, FixedString512Bytes newValue)
     {
+        // 받은 채팅 내용을 logger에 찍기
         GameManager.Instance.Log(newValue.ToString());
     }
     #endregion

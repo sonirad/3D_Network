@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Unity.Netcode;
+using TMPro;
 
 public class TestNetController : MonoBehaviour
 {
+    private TextMeshProUGUI playerInGame;
+
     private void Start()
     {
         Transform child = transform.GetChild(0);
@@ -45,5 +48,10 @@ public class TestNetController : MonoBehaviour
             // 내 연결 끊기
             NetworkManager.Singleton.Shutdown();
         });
+
+        // 동시접속자 수
+        child = transform.GetChild(3);
+        child = child.GetChild(1);
+        playerInGame = child.GetComponent<TextMeshProUGUI>();
     }
 }
