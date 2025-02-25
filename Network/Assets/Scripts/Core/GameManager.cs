@@ -9,11 +9,39 @@ public class GameManager : NetSingleton<GameManager>
     private NetPlayer player;
     [Tooltip("현재 접속자 수")]
     private NetworkVariable<int> playersInGame = new NetworkVariable<int>(0);
+    [Tooltip("현재 사용자 이름")]
+    private string userName = "디폴트";
+    [Tooltip("현재 사용자 색상")]
+    private Color userColor = Color.clear;
 
     public NetPlayer Player => player;
+    public string UserName
+    {
+        get => userName;
+        set
+        {
+            userName = value;
+
+            onUserNameChange?.Invoke(userName);
+        }
+    }
+    public Color UserColor
+    {
+        get => userColor;
+        set
+        {
+            userColor = value;
+
+            onUserColorChange?.Invoke(userColor);
+        }
+    }
 
     [Tooltip("동시접속자 수가 변경되었음을 알리는 델리게이트")]
     public Action<int> onPlayersInGameChange;
+    [Tooltip("유저 이름이 변경되었음을 알리는 델리게이트")]
+    public Action<string> onUserNameChange;
+    [Tooltip("유저 색상이 변경되었음을 알리는 델리게이트")]
+    public Action<Color> onUserColorChange;
 
     protected override void OnInitialize()
     {

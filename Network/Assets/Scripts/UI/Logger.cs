@@ -29,14 +29,23 @@ public class Logger : MonoBehaviour
 
         inputField.onSubmit.AddListener((text) =>
         {
-            if (GameManager.Instance.Player != null)
+            // 입력한 라인의 첫번째 글자가 '/'라면 콘솔 명령을 처리한다.
+            if (false/* 첫글자 확인 */)
             {
-                GameManager.Instance.Player.SendChat(text);
+                ConSoleCommand(text);
             }
             else
             {
-                Log(text);
+                if (GameManager.Instance.Player != null)
+                {
+                    GameManager.Instance.Player.SendChat(text);
+                }
+                else
+                {
+                    Log(text);
+                }
             }
+            
             // 입력 완료되면 비우기
             inputField.text = string.Empty;
             // 포커스 다시 활성화
@@ -197,5 +206,14 @@ public class Logger : MonoBehaviour
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// 개발용 콘솔 명령어 처리
+    /// </summary>
+    /// <param name="command">입력받은 명령어</param>
+    private void ConSoleCommand(string command)
+    {
+
     }
 }
