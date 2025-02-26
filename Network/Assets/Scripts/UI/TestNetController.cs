@@ -6,6 +6,7 @@ using TMPro;
 public class TestNetController : MonoBehaviour
 {
     private TextMeshProUGUI playerInGame;
+    private TextMeshProUGUI userName;
 
     private void Start()
     {
@@ -57,5 +58,14 @@ public class TestNetController : MonoBehaviour
 
         // 동시 접속자 숫자 변경 델리게이트가 실행되면 UI 갱신
         gameManager.onPlayersInGameChange += (count) => playerInGame.text = count.ToString();
+
+        child = transform.GetChild(4);
+        child = child.GetChild(1);
+        userName = child.GetComponent<TextMeshProUGUI>();
+
+        gameManager.onUserNameChange += (name) =>
+        {
+            userName.text = gameManager.UserName;
+        };
     }
 }

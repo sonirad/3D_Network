@@ -30,7 +30,7 @@ public class Logger : MonoBehaviour
         inputField.onSubmit.AddListener((text) =>
         {
             // 입력한 라인의 첫번째 글자가 '/'라면 콘솔 명령을 처리한다.
-            if (false/* 첫글자 확인 */)
+            if (text[0] == '/')
             {
                 ConSoleCommand(text);
             }
@@ -214,6 +214,22 @@ public class Logger : MonoBehaviour
     /// <param name="command">입력받은 명령어</param>
     private void ConSoleCommand(string command)
     {
+        int space = command.IndexOf(' ');
+        // 첫번째 ~ space 위치 앞까지
+        string commandToken = command.Substring(0, space);
+        // 전부 소문자로 바꾸기
+        commandToken = commandToken.ToLower();
+        // space 위치 다음 칸 ~ 끝까지
+        string dataToken = command.Substring(space + 1);
+        GameManager gameManager = GameManager.Instance;
 
+        switch (commandToken)
+        {
+            case "/setname":
+                gameManager.UserName = dataToken;
+                break;
+            case "/setcolor":
+                break;
+        }
     }
 }

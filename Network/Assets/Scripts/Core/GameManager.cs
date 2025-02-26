@@ -13,6 +13,7 @@ public class GameManager : NetSingleton<GameManager>
     private string userName = "디폴트";
     [Tooltip("현재 사용자 색상")]
     private Color userColor = Color.clear;
+    private NetPlayerDecorator deco;
 
     public NetPlayer Player => player;
     public string UserName
@@ -67,6 +68,9 @@ public class GameManager : NetSingleton<GameManager>
         {
             player = netObj.GetComponent<NetPlayer>();
             player.gameObject.name = $"Player_{id}";
+            deco = netObj.GetComponent<NetPlayerDecorator>();
+
+            deco.SetName(UserName);
 
             foreach (var other in NetworkManager.SpawnManager.SpawnedObjectsList)
             {

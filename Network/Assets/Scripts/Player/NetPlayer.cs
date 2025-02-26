@@ -75,6 +75,15 @@ public class NetPlayer : NetworkBehaviour
 
         inputActions.Player.Disable();
     }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsOwner)
+        {
+
+        }
+    }
+
     #endregion
 
     #region 입력 처리용 함수들
