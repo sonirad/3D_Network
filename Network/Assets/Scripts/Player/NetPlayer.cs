@@ -84,6 +84,14 @@ public class NetPlayer : NetworkBehaviour
         }
     }
 
+    public override void OnNetworkDespawn()
+    {
+        if (IsOwner)
+        {
+            GameManager.Instance.onPlayerDisconnected?.Invoke();
+        }
+    }
+
     #endregion
 
     #region 입력 처리용 함수들

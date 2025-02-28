@@ -8,6 +8,9 @@ public class TestNetController : MonoBehaviour
     private TextMeshProUGUI playerInGame;
     private TextMeshProUGUI userName;
 
+    private const string BlankUserName = "□□□□□□□□";
+    private const string BlackPlayersInGame = "_";
+
     private void Start()
     {
         Transform child = transform.GetChild(0);
@@ -59,6 +62,7 @@ public class TestNetController : MonoBehaviour
         // 동시 접속자 숫자 변경 델리게이트가 실행되면 UI 갱신
         gameManager.onPlayersInGameChange += (count) => playerInGame.text = count.ToString();
 
+        // 사용자 이름
         child = transform.GetChild(4);
         child = child.GetChild(1);
         userName = child.GetComponent<TextMeshProUGUI>();
@@ -66,6 +70,13 @@ public class TestNetController : MonoBehaviour
         gameManager.onUserNameChange += (name) =>
         {
             userName.text = gameManager.UserName;
+        };
+
+        // 플레이어가 접속을 끊었을 때 초기화
+        gameManager.onPlayerDisconnected += () =>
+        {
+            userName.text = BlankUserName;
+            playerInGame.text = BlackPlayersInGame;
         };
     }
 }

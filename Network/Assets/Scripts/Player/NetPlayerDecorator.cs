@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Collections;
+using UnityEngine.InputSystem.iOS;
 
 public class NetPlayerDecorator : NetworkBehaviour
 {
@@ -30,11 +31,6 @@ public class NetPlayerDecorator : NetworkBehaviour
         userName.OnValueChanged += onNameSet;
     }
 
-    private void OnBodyColorChange(Color previousValue, Color newValue)
-    {
-        bodyMaterial.SetColor(BaseColor_Hash, newValue);
-    }
-
     public override void OnNetworkSpawn()
     {
         if (IsServer)
@@ -44,6 +40,8 @@ public class NetPlayerDecorator : NetworkBehaviour
 
         bodyMaterial.SetColor(BaseColor_Hash, bodyColor.Value);
     }
+
+    #region 이름 설정용
 
     public void SetName(string name)
     {
@@ -75,4 +73,36 @@ public class NetPlayerDecorator : NetworkBehaviour
     {
         namePlate.SetName(userName.Value.ToString());
     }
+
+    #endregion
+
+    #region 색상 설정용
+
+    public void SetColor(Color color)
+    {
+        if (IsOwner)
+        {
+            if (IsServer)
+            {
+                bodyColor.Value = color;
+            }
+            else
+            {
+                RequestBodyColorChangeServerRpc(color);
+            }
+        }
+    }
+
+    [ServerRpc]
+    private void RequestBodyColorChangeServerRpc(Color color)
+    {
+        bodyColor.Value = color;
+    }
+
+    private void OnBodyColorChange(Color previousValue, Color newValue)
+    {
+        bodyMaterial.SetColor(BaseColor_Hash, newValue);
+    }
+
+    #endregion
 }

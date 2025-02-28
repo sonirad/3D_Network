@@ -10,10 +10,11 @@ public class GameManager : NetSingleton<GameManager>
     [Tooltip("현재 접속자 수")]
     private NetworkVariable<int> playersInGame = new NetworkVariable<int>(0);
     [Tooltip("현재 사용자 이름")]
-    private string userName = "디폴트";
+    private string userName = DefaultName;
     [Tooltip("현재 사용자 색상")]
     private Color userColor = Color.clear;
     private NetPlayerDecorator deco;
+    const string DefaultName = "플레이어";
 
     public NetPlayer Player => player;
     public string UserName
@@ -37,12 +38,15 @@ public class GameManager : NetSingleton<GameManager>
         }
     }
 
+    public NetPlayerDecorator PlayerDeco => deco;
+
     [Tooltip("동시접속자 수가 변경되었음을 알리는 델리게이트")]
     public Action<int> onPlayersInGameChange;
     [Tooltip("유저 이름이 변경되었음을 알리는 델리게이트")]
     public Action<string> onUserNameChange;
     [Tooltip("유저 색상이 변경되었음을 알리는 델리게이트")]
     public Action<Color> onUserColorChange;
+    public Action onPlayerDisconnected;
 
     protected override void OnInitialize()
     {
@@ -70,7 +74,21 @@ public class GameManager : NetSingleton<GameManager>
             player.gameObject.name = $"Player_{id}";
             deco = netObj.GetComponent<NetPlayerDecorator>();
 
-            deco.SetName(UserName);
+            if (UserName != DefaultName)
+            {
+                deco.SetName($"{UserName}_{id}");
+                UserName = UserName;
+            }
+            else
+            {
+                deco.SetName($"{DefaultName}_{id}");
+                UserName = DefaultName;
+            }
+
+            if (UserColor != Color.clear)
+            {
+                deco.SetColor(UserColor);
+            }
 
             foreach (var other in NetworkManager.SpawnManager.SpawnedObjectsList)
             {
@@ -79,6 +97,13 @@ public class GameManager : NetSingleton<GameManager>
                 if (otherPlayer != null && otherPlayer != player)
                 {
                     otherPlayer.gameObject.name = $"OtherPlayer_{other.OwnerClientId}";
+                }
+
+                NetPlayerDecorator netDeco = other.GetComponent<NetPlayerDecorator>();
+
+                if (netDeco != null && netDeco != deco)
+                {
+                    netDeco.RefreshNamePlate();
                 }
             }
         }
@@ -105,13 +130,6 @@ public class GameManager : NetSingleton<GameManager>
     /// <param name="id">접속 해제한 클라이언트의 id</param>
     private void OnClientDisconnect(ulong id)
     {
-        NetworkObject netObj = NetworkManager.SpawnManager.GetPlayerNetworkObject(id);
-
-        if (netObj.IsOwner)
-        {
-            player = null;
-        }
-
         if (IsServer)
         {
             // 서버에서만 감소

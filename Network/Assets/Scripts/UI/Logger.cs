@@ -19,8 +19,12 @@ public class Logger : MonoBehaviour
     [Tooltip("로그창에 출력될 모든 문자열 큐")]
     private Queue<string> logLines = new Queue<string>(maxLineCount + 1);
 
+    #region 컴포넌트
+
     private TextMeshProUGUI log;
     private TMP_InputField inputField;
+
+    #endregion
 
     private void Awake()
     {
@@ -227,8 +231,55 @@ public class Logger : MonoBehaviour
         {
             case "/setname":
                 gameManager.UserName = dataToken;
+
+                if (gameManager.PlayerDeco != null)
+                {
+                    // 접속을 하지 않았으면 없다.
+                    gameManager.PlayerDeco.SetName(dataToken);
+                }
+
                 break;
             case "/setcolor":
+                string[] colorStrings = dataToken.Split(',', ',');
+                float[] colorValues = new float[3] { 0, 0, 0 };
+                int count = 0;
+
+                foreach (string color in colorStrings)
+                {
+                    if (color.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    // 총 3개만 처리
+                    if (count > 2)
+                    {
+                        break;
+                    }
+
+                    if (!float.TryParse(color, out colorValues[count]))
+                    {
+                        colorValues[count] = 0;
+                    }
+
+                    count++;
+                }
+
+                for (int i = 0; i < colorValues.Length; i++)
+                {
+                    colorValues[i] = Mathf.Clamp01(colorValues[i]);
+                }
+
+                Color resultColor = new Color(colorValues[0], colorValues[1], colorValues[2]);
+
+                if (gameManager.PlayerDeco != null)
+                {
+                    // 접속을 하지 않았으면 없다.
+                    gameManager.PlayerDeco.SetColor(resultColor);
+                }
+
+                gameManager.UserColor = resultColor;
+
                 break;
         }
     }
