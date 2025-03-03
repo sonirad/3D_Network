@@ -11,6 +11,8 @@ public class NetSingleton<T> : NetworkBehaviour where T : Component
     [Tooltip("¿Ã ΩÃ±€≈Ê¿« ∞¥√º(¿ŒΩ∫≈œΩ∫)")]
     private static T instance = null;
 
+    public bool IsShutdown => isShutdown;
+
     [Tooltip("¿Ã ΩÃ±€≈Ê¿« ∞¥√º∏¶ ¿–±‚ ¿ß«— «¡∑Œ∆€∆º")]
     public static T Instance
     {

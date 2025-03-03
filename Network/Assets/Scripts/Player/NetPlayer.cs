@@ -80,7 +80,7 @@ public class NetPlayer : NetworkBehaviour
     {
         if (IsOwner)
         {
-
+            GameManager.Instance.VCam.Follow = transform.GetChild(0);
         }
     }
 
@@ -88,6 +88,7 @@ public class NetPlayer : NetworkBehaviour
     {
         if (IsOwner)
         {
+            GameManager.Instance.VCam.Follow = null;
             GameManager.Instance.onPlayerDisconnected?.Invoke();
         }
     }
