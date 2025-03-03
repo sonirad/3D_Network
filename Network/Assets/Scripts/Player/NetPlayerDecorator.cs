@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using Unity.Collections;
 using UnityEngine.InputSystem.iOS;
+using System.Net.NetworkInformation;
 
 public class NetPlayerDecorator : NetworkBehaviour
 {
@@ -22,13 +23,42 @@ public class NetPlayerDecorator : NetworkBehaviour
 
     #endregion
 
+    #region ¿Ã∆Â∆Æ
+
+    private NetworkVariable<bool> netEffectState = new NetworkVariable<bool>(false);
+
+    public bool IsEffectOn
+    {
+        get => netEffectState.Value;
+        set
+        {
+            if (netEffectState.Value != value)
+            {
+                if (IsServer)
+                {
+                    netEffectState.Value = value;
+                }
+                else
+                {
+                    UpdateEffectStateServerRpc(value);
+                }
+            }
+        }
+    }
+
+    readonly int EmissionIntensity_Hash = Shader.PropertyToID("_EmissionIntensity");
+
+    #endregion
+
     private void Awake()
     {
         playerRenderer = GetComponentInChildren<Renderer>();
         bodyMaterial = playerRenderer.material;
         bodyColor.OnValueChanged += OnBodyColorChange;
         namePlate = GetComponentInChildren<NamePlate>();
+
         userName.OnValueChanged += onNameSet;
+        netEffectState.OnValueChanged += OnEffectStateChange;
     }
 
     public override void OnNetworkSpawn()
@@ -102,6 +132,28 @@ public class NetPlayerDecorator : NetworkBehaviour
     private void OnBodyColorChange(Color previousValue, Color newValue)
     {
         bodyMaterial.SetColor(BaseColor_Hash, newValue);
+    }
+
+    #endregion
+
+    #region ¿Ã∆Â∆ÆøÎ
+
+    private void OnEffectStateChange(bool previousValue, bool newValue)
+    {
+        if (newValue)
+        {
+            bodyMaterial.SetFloat(EmissionIntensity_Hash, 1.0f);
+        }
+        else
+        {
+            bodyMaterial.SetFloat(EmissionIntensity_Hash, 0.0f);
+        }
+    }
+
+    [ServerRpc]
+    private void UpdateEffectStateServerRpc(bool isOn)
+    {
+        netEffectState.Value = isOn;
     }
 
     #endregion
