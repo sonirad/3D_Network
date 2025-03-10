@@ -11,8 +11,14 @@ public class NetPlayer : NetworkBehaviour
     public float rotateSpeed = 90.0f;
     [Tooltip("마지막 입력으로 인한 이동 방향(전진, 정지, 후진) 네트워크에서 공유되는 변수")]
     private NetworkVariable<float> netMoveDir = new NetworkVariable<float>(0.0f);
-    [Tooltip("마지막 입력으로 인한 회전 방향(좌회전, 정지, 우회전")]
+    [Tooltip("마지막 입력으로 인한 회전 방향(좌회전, 정지, 우회전)")]
     private NetworkVariable<float> netRotate = new NetworkVariable<float>(0.0f);
+    [Tooltip("공격용 총알 프리팹")]
+    public GameObject bulletPrefab;
+    [Tooltip("공격용 오브 프리팹")]
+    public GameObject orbPrefab;
+    [Tooltip("발사 위치용 트랜스폼")]
+    private Transform fireTransfom;
 
     // 컴포넌트
     private CharacterController controller;
@@ -44,6 +50,8 @@ public class NetPlayer : NetworkBehaviour
 
         netAnimState.OnValueChanged += OnAnimStateChange;
         chatString.OnValueChanged += OnChatRecieve;
+
+        fireTransfom = transform.GetChild(4);
     }
 
     private void Update()
@@ -64,6 +72,8 @@ public class NetPlayer : NetworkBehaviour
         inputActions.Player.Move_Forward.canceled += OnMoveInput;
         inputActions.Player.Rotate.performed += OnRotate;
         inputActions.Player.Rotate.canceled += OnRotate;
+        inputActions.Player.Attack1.canceled += OnAttack1;
+        inputActions.Player.Attack2.canceled += OnAttack2;
     }
 
     private void OnDisable()
@@ -72,6 +82,8 @@ public class NetPlayer : NetworkBehaviour
         inputActions.Player.Move_Forward.canceled -= OnMoveInput;
         inputActions.Player.Rotate.performed -= OnRotate;
         inputActions.Player.Rotate.canceled -= OnRotate;
+        inputActions.Player.Attack1.performed -= OnAttack1;
+        inputActions.Player.Attack2.performed -= OnAttack2;
 
         inputActions.Player.Disable();
     }
@@ -111,9 +123,22 @@ public class NetPlayer : NetworkBehaviour
 
         SetRotateInput(rotateInput);
     }
+
+    private void OnAttack1(InputAction.CallbackContext obj)
+    {
+        // 좌클릭 : 총알 발사
+        Attack1();
+    }
+
+    private void OnAttack2(InputAction.CallbackContext obj)
+    {
+        // 우클릭 : 오브 발사
+        Attack2();
+    }
+
     #endregion
 
-    #region 기타
+    #region 이동 및 공격
 
     /// <summary>
     /// 이동 입력 처리용
@@ -202,6 +227,17 @@ public class NetPlayer : NetworkBehaviour
         // 새 값으로 변경
         animator.SetTrigger(newValue.ToString());
     }
+
+    private void Attack1()
+    {
+
+    }
+
+    private void Attack2()
+    {
+        GameObject orb = Instantiate(orbPrefab, fireTransfom.position, fireTransfom.rotation);
+    }
+
     #endregion
 
     #region 채팅

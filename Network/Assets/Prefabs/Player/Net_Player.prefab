@@ -1886,6 +1886,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7066131460934545660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5122387983932150456
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4796336527049256794}
+  m_Layer: 6
+  m_Name: FirePosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4796336527049256794
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5122387983932150456}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.4, z: 0.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7200292798141644686}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5128971404112436920
 GameObject:
   m_ObjectHideFlags: 0
@@ -2770,7 +2801,7 @@ GameObject:
   - component: {fileID: 2836557514445682261}
   - component: {fileID: 8614301381454035862}
   - component: {fileID: 6197612666451571123}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Net_Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -2794,6 +2825,7 @@ Transform:
   - {fileID: 7262205090725543301}
   - {fileID: 2423103327034585578}
   - {fileID: 7061338140535776402}
+  - {fileID: 4796336527049256794}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &773079886322412669
