@@ -6,12 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Test/06_Camera_Connect.unity
-    guid: 419935e15942c6040856ab57150a2203
-  - enabled: 1
-    path: Assets/Scenes/Test/07_Shader.unity
-    guid: c82c889f79943de4599c53b0958b39f3
-  - enabled: 1
     path: Assets/Scenes/Test/09_NetSpawn.unity
     guid: 626d4c7f0866a8b4388a95c0664381b6
   m_configObjects: {}

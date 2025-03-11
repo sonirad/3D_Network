@@ -2909,6 +2909,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 3.5
   rotateSpeed: 90
+  bulletPrefab: {fileID: 0}
+  orbPrefab: {fileID: 7833672553882300427, guid: 8f0b765547b33dd4f900c49c03138460,
+    type: 3}
 --- !u!114 &6197612666451571123
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -42,11 +42,11 @@ public class NetPlayer : NetworkBehaviour
     private NetworkVariable<FixedString512Bytes> chatString = new NetworkVariable<FixedString512Bytes>();
 
     #region 유니티 이벤트 함수
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
-        inputActions = new Player_Input_Actions();
 
         netAnimState.OnValueChanged += OnAnimStateChange;
         chatString.OnValueChanged += OnChatRecieve;
@@ -64,34 +64,21 @@ public class NetPlayer : NetworkBehaviour
         transform.Rotate(0, netRotate.Value * Time.deltaTime, 0, Space.World);
     }
 
-    private void OnEnable()
-    {
-        inputActions.Player.Enable();
-
-        inputActions.Player.Move_Forward.performed += OnMoveInput;
-        inputActions.Player.Move_Forward.canceled += OnMoveInput;
-        inputActions.Player.Rotate.performed += OnRotate;
-        inputActions.Player.Rotate.canceled += OnRotate;
-        inputActions.Player.Attack1.canceled += OnAttack1;
-        inputActions.Player.Attack2.canceled += OnAttack2;
-    }
-
-    private void OnDisable()
-    {
-        inputActions.Player.Move_Forward.performed -= OnMoveInput;
-        inputActions.Player.Move_Forward.canceled -= OnMoveInput;
-        inputActions.Player.Rotate.performed -= OnRotate;
-        inputActions.Player.Rotate.canceled -= OnRotate;
-        inputActions.Player.Attack1.performed -= OnAttack1;
-        inputActions.Player.Attack2.performed -= OnAttack2;
-
-        inputActions.Player.Disable();
-    }
-
     public override void OnNetworkSpawn()
     {
         if (IsOwner)
         {
+            inputActions = new Player_Input_Actions();
+
+            inputActions.Player.Enable();
+
+            inputActions.Player.Move_Forward.performed += OnMoveInput;
+            inputActions.Player.Move_Forward.canceled += OnMoveInput;
+            inputActions.Player.Rotate.performed += OnRotate;
+            inputActions.Player.Rotate.canceled += OnRotate;
+            inputActions.Player.Attack1.canceled += OnAttack1;
+            inputActions.Player.Attack2.canceled += OnAttack2;
+
             GameManager.Instance.VCam.Follow = transform.GetChild(0);
         }
     }
@@ -101,6 +88,18 @@ public class NetPlayer : NetworkBehaviour
         if (IsOwner)
         {
             GameManager.Instance.VCam.Follow = null;
+
+            inputActions.Player.Move_Forward.performed -= OnMoveInput;
+            inputActions.Player.Move_Forward.canceled -= OnMoveInput;
+            inputActions.Player.Rotate.performed -= OnRotate;
+            inputActions.Player.Rotate.canceled -= OnRotate;
+            inputActions.Player.Attack1.performed -= OnAttack1;
+            inputActions.Player.Attack2.performed -= OnAttack2;
+
+            inputActions.Player.Disable();
+
+            inputActions = null;
+
             GameManager.Instance.onPlayerDisconnected?.Invoke();
         }
     }
@@ -235,7 +234,7 @@ public class NetPlayer : NetworkBehaviour
 
     private void Attack2()
     {
-        GameObject orb = Instantiate(orbPrefab, fireTransfom.position, fireTransfom.rotation);
+        RequestEnergyOrbServerRpc();
     }
 
     #endregion
@@ -272,6 +271,7 @@ public class NetPlayer : NetworkBehaviour
     #endregion
 
     #region 서버 Rpc들
+
     [ServerRpc]
     private void MoveRequestServerRpc(float move)
     {
@@ -295,5 +295,15 @@ public class NetPlayer : NetworkBehaviour
     {
         chatString.Value = message;
     }
+
+    [ServerRpc]
+    private void RequestEnergyOrbServerRpc()
+    {
+        GameObject orb = Instantiate(orbPrefab, fireTransfom.position, fireTransfom.rotation);
+        NetworkObject netOrb = orb.GetComponent<NetworkObject>();
+
+        netOrb.Spawn(true);
+    }
+
     #endregion
 }
