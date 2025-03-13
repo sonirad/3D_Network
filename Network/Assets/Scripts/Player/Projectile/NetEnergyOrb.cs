@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.VFX;
 using Unity.Netcode;
+using System.Collections.Generic;
 
 public class NetEnergyOrb : NetworkBehaviour
 {
@@ -11,7 +12,7 @@ public class NetEnergyOrb : NetworkBehaviour
     public float lifeTime = 20.0f;
     [Tooltip("폭발 범위")]
     public float expolsionRadius = 5.0f;
-    private bool isUsed = false;
+    // private bool isUsed = false;
 
     private Rigidbody rigid;
     private VisualEffect effect;
@@ -22,17 +23,12 @@ public class NetEnergyOrb : NetworkBehaviour
         effect = GetComponent<VisualEffect>();
     }
 
-    private void Start()
-    {
-        transform.Rotate(-30.0f, 0, 0);
-
-        rigid.velocity = speed * transform.forward;
-    }
-
     public override void OnNetworkSpawn()
     {
-        if (IsOwner)
+        if (IsOwner && IsServer)
         {
+            transform.Rotate(-30.0f, 0, 0);
+            rigid.velocity = speed * transform.forward;
             StartCoroutine(SelfDespawn());
         }
     }
@@ -41,38 +37,52 @@ public class NetEnergyOrb : NetworkBehaviour
     {
         yield return new WaitForSeconds(lifeTime);
 
-        if (IsServer)
+        if (IsOwner && this.NetworkObject.IsSpawned)
         {
-            this.NetworkObject.Despawn();
-        }
-        else
-        {
-            RequestDespawnServerRpc();
+            if (IsServer)
+            {
+                this.NetworkObject.Despawn();
+            }
+            else
+            {
+                RequestDespawnServerRpc();
+            }
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         // 오너가 아니면 무시. spawn 되기 전에 일어난 충돌은 무시.
-        if (!IsOwner && !this.NetworkObject.IsSpawned)
+        if (!this.NetworkObject.IsSpawned)
         {
             return;
         }
 
-        if (!isUsed)
-        {
-            Collider[] result = Physics.OverlapSphere(transform.position, expolsionRadius, LayerMask.GetMask("Player"));
+        Collider[] result = Physics.OverlapSphere(transform.position, expolsionRadius, LayerMask.GetMask("Player"));
 
-            if (result.Length > 0)
+        if (result.Length > 0)
+        {
+            List<ulong> targets = new List<ulong>(result.Length);
+
+            foreach (Collider col in result)
             {
-                foreach (Collider col in result)
-                {
-                    Debug.Log(col.gameObject.name);
-                }
+                NetPlayer hitted = col.gameObject.GetComponent<NetPlayer>();
+
+                targets.Add(hitted.OwnerClientId);
             }
 
-            EffectProcessClientRpc();
+            ClientRpcParams clientRpcParams = new ClientRpcParams
+            {
+                Send = new ClientRpcSendParams()
+                {
+                    TargetClientIds = targets.ToArray()
+                }
+            };
+
+            PlayerDieClientRpc(clientRpcParams);
         }
+
+        EffectProcessClientRpc();
     }
 
     /// <summary>
@@ -81,15 +91,10 @@ public class NetEnergyOrb : NetworkBehaviour
     [ClientRpc]
     private void EffectProcessClientRpc()
     {
-        if (IsOwner)
-        {
-            rigid.useGravity = false;
-            rigid.isKinematic = true;
+        rigid.useGravity = false;
+        rigid.drag = Mathf.Infinity;
 
-            StartCoroutine(EffectFinishProcess());
-
-            isUsed = true;
-        }
+        StartCoroutine(EffectFinishProcess());
     }
 
     private IEnumerator EffectFinishProcess()
@@ -138,7 +143,10 @@ public class NetEnergyOrb : NetworkBehaviour
         }
         else
         {
-            RequestDespawnServerRpc();
+            if (IsOwner)
+            {
+                RequestDespawnServerRpc();
+            }
         }
     }
 
@@ -146,5 +154,19 @@ public class NetEnergyOrb : NetworkBehaviour
     private void RequestDespawnServerRpc()
     {
         this.NetworkObject.Despawn();
+    }
+
+    [ServerRpc]
+    private void SetVelocityServerRpc(Vector3 newVelocity)
+    {
+        rigid.velocity = newVelocity;
+    }
+
+    [ClientRpc]
+    private void PlayerDieClientRpc(ClientRpcParams clientRpcSendParams = default)
+    {
+        NetPlayer player = GameManager.Instance.Player;
+
+        player.SendChat($"[{GameManager.Instance.Player.name}]이 죽었음.");
     }
 }
